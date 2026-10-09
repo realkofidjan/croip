@@ -47,6 +47,8 @@ Concessionaires get to run things their own way. They never handle the money: th
 
 ### 2.4 Payments: the payment platform sits on CROIP
 
+> **Why (Minister's direction, given after the meeting):** The Minister wants CROIP to handle payments and disbursement. His concern is that municipalities have misused funds when collections sit in their own bank accounts. This replaces the meeting's earlier idea of letting each concessionaire run its own gateway.
+
 | # | Decision |
 |---|---|
 | D10 | **The payment platform sits on CROIP, not the concessionaire.** CROIP connects to the partner bank's payment gateway (MoMo, cards, bank). CROIP is not a fintech: the bank processes the payment, and CROIP starts the payment and stores the gateway's response. |
@@ -62,18 +64,18 @@ Concessionaires get to run things their own way. They never handle the money: th
 
 | # | Decision |
 |---|---|
-| D16 | **Revenue split rules are a government business decision.** The consortium builds whatever rules government sets. |
-| D17 | CROIP applies the split rules **at the point of payment confirmation**. |
-| D18 | Collections should **not sit in concessionaire or assembly accounts**. This is the Minister's stated aim, given past misuse. |
+| D16 | **CROIP handles disbursement.** Collections are paid out to recipients by CROIP's instruction to the partner bank, not by municipalities or concessionaires. |
+| D17 | **Revenue split percentages are a government business decision.** CROIP applies the split rules **at the point of payment confirmation**. |
+| D18 | Collections **never sit in municipal (assembly) or concessionaire bank accounts** before CROIP's split and disbursement. This is the Minister's direction, given past misuse of funds. |
 | D19 | Disbursement is expected to run **every 24 hours**, through the partner bank's reconciliation and disbursement process. |
 
-**Government decision: disbursement model**
+**Disbursement model** (CROIP handles disbursement under both options)
 
-| Option A — Central pool | Option B — Split at payment |
+| Option A — Central pool (Minister's preference) | Option B — Split at payment |
 |---|---|
-| All collections go into a central pool first. | The split happens at the moment of payment. |
-| Government then pays out shares from the pool. | Each share goes straight to its destination account. |
-| Matches the Minister's current proposal. | Money reaches recipients faster. Needs gateway or bank support for split settlement. |
+| All collections go into a CROIP-controlled central account first. | CROIP tells the bank to split each payment as it is confirmed. |
+| CROIP pays out shares on a set schedule (daily). | Each share goes straight to its destination account. |
+| Matches the Minister's current proposal. | Money reaches recipients faster. Needs bank support for split settlement. |
 
 **Example (illustrative):** A ratepayer pays a GH₵200 bill.
 
@@ -154,7 +156,7 @@ sequenceDiagram
 | # | Item | Owner |
 |---|---|---|
 | O1 | Government to set the revenue split percentages and recipients | Government / Ministry |
-| O2 | Government to choose between Option A (central pool) and Option B (split at payment) | Government / Ministry |
+| O2 | Government to confirm Option A (central pool, the Minister's preference) or Option B (split at payment). CROIP handles disbursement either way. | Government / Ministry |
 | O3 | Confirm daily (24-hour) disbursement frequency with the partner bank | Consortium + Bank |
 | O4 | Define the rate card verification process: who approves at CROIP, turnaround time, and how rate card changes are versioned | Consortium + Government |
 | O5 | ~~Confirm who will operate CROIP~~ **Closed:** a government team operates CROIP (D20). Still to agree: the handover and training plan, and any consortium support period after handover. | Government + Consortium |
