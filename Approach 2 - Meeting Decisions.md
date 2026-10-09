@@ -8,9 +8,9 @@
 
 ## 1. Summary
 
-Under Approach 2, CROIP publishes the standards and APIs. Concessionaires keep running their own operations and systems. CROIP is the single point through which every payment is **acknowledged, receipted and verified**.
+Under Approach 2, CROIP publishes the standards and APIs. Concessionaires keep running their own operations and systems. **The payment platform sits on CROIP.** Every payment is made through CROIP and is **acknowledged, receipted and verified** by CROIP.
 
-Concessionaires get to run things their own way. They do not get to keep collections out of view, because the ratepayer only treats a payment as complete once **CROIP** acknowledges it.
+Concessionaires get to run things their own way. They never handle the money: they issue bills, and ratepayers pay those bills through CROIP.
 
 > **Guiding principle:** Concessionaires are independent, but only within guardrails they cannot step outside.
 
@@ -30,7 +30,7 @@ Concessionaires get to run things their own way. They do not get to keep collect
 
 | # | Decision |
 |---|---|
-| D4 | Concessionaires keep **their own software** to collect revenue, manage revenue and handle district-specific needs. |
+| D4 | Concessionaires keep **their own software** for property records, valuation, billing, field operations and district-specific needs. Payment collection is not one of them: it runs through CROIP. |
 | D5 | Existing concessionaire systems (3–4 players have already built them) are **not replaced** in the early stages. They integrate with CROIP. |
 | D6 | **Bill calculation sits with the concessionaire, and CROIP verifies it.** The concessionaire calculates the bill in its own system and submits it to CROIP in the published standard format. |
 | D6a | **CROIP verifies the rate card.** Each municipality's rate card must be submitted to CROIP and verified before it is used. |
@@ -45,18 +45,18 @@ Concessionaires get to run things their own way. They do not get to keep collect
 | D8 | There is **one national ratepayer app**, not a separate app per concessionaire. |
 | D9 | The app works in every district, whichever concessionaire manages it, because all data follows the same standard. |
 
-### 2.4 Payments: CROIP as the control point
+### 2.4 Payments: the payment platform sits on CROIP
 
 | # | Decision |
 |---|---|
-| D10 | Each concessionaire **may use its own payment gateway**. CROIP is not a fintech and does not have to process the payment itself. |
-| D11 | The gateway **callback goes to both CROIP and the concessionaire**. This is the start of reconciliation. |
-| D12 | **Acknowledgement of payment comes from CROIP, not the concessionaire.** CROIP sends the receipt by app, SMS and email. |
-| D13 | Receipts carry a **QR code that is verified against CROIP**, not the concessionaire's system. |
-| D14 | Reporting can be **real time or near real time**, but every payment **must reach CROIP within 24 hours**, to allow for outages and connectivity issues. |
+| D10 | **The payment platform sits on CROIP, not the concessionaire.** CROIP connects to the partner bank's payment gateway (MoMo, cards, bank). CROIP is not a fintech: the bank processes the payment, and CROIP starts the payment and stores the gateway's response. |
+| D11 | Concessionaires **do not run their own payment gateways** for property rates. Their agents' cashless assisted payments also go through CROIP's payment APIs. |
+| D12 | The **gateway callback goes to CROIP**. CROIP then confirms the payment to the concessionaire in real time. This is the start of reconciliation. |
+| D13 | **Acknowledgement of payment comes from CROIP.** CROIP sends the receipt by app, SMS and email. |
+| D14 | Receipts carry a **QR code that is verified against CROIP**. |
 | D15 | CROIP handles **central messaging and notifications**. |
 
-**Why this works as a safeguard:** If a ratepayer pays and does not get a CROIP receipt, they will complain. A concessionaire therefore cannot collect money without reporting it. The 24-hour window also means CROIP cannot be used as an excuse against the concessionaire's own KPIs.
+**Why this works as a safeguard:** Every payment passes through CROIP's platform, so no collection can bypass it. The money never touches a concessionaire's account, and CROIP holds the full payment record from the moment payment starts.
 
 ### 2.5 Revenue split and disbursement
 
@@ -117,21 +117,20 @@ Concessionaires get to run things their own way. They do not get to keep collect
 sequenceDiagram
     participant R as Ratepayer (Unified App)
     participant C as Concessionaire System
-    participant G as Concessionaire Payment Gateway
-    participant X as CROIP
-    participant B as Partner Bank
+    participant X as CROIP (Payment Platform)
+    participant B as Partner Bank Gateway
 
     C->>X: Submit municipality rate card
     X->>X: Verify rate card (bills not payable until verified)
     C->>X: Submit bill (calculated by concessionaire, standard format)
     X->>X: Check bill against verified rate card version
     X->>R: Verified bill visible and payable in unified app
-    R->>G: Pay bill
-    G-->>X: Payment callback
-    G-->>C: Payment callback
-    X->>X: Apply revenue split rules
+    R->>X: Pay bill (MoMo / card / bank)
+    X->>B: Start payment through bank API
+    B-->>X: Payment callback
+    X->>X: Store gateway response and apply revenue split rules
     X->>R: Receipt with QR code (app / SMS / email)
-    Note over C,X: Payments must reach CROIP within 24 hours
+    X->>C: Real-time payment confirmation
     X->>B: Daily reconciliation and disbursement instruction
     B-->>X: Settlement confirmation
 ```
@@ -142,9 +141,9 @@ sequenceDiagram
 
 | Current page | Updated position |
 |---|---|
-| CROIP routes payments through one partner bank | Concessionaires may use their own gateways. The callback must reach CROIP. |
+| CROIP routes payments through one partner bank | **No change.** The payment platform sits on CROIP and connects to the partner bank's gateway. |
 | CROIP calculates bills from the rate card | **Concessionaire calculates bills**. CROIP verifies the rate card and checks each bill against it. Bills can't be paid until the rate card is verified. |
-| "CROIP reconciles and notifies" (no deadline) | CROIP issues the receipt and QR code. **24-hour** reporting deadline. |
+| "CROIP reconciles and notifies" | CROIP issues the receipt and QR code, and confirms each payment to the concessionaire in real time. |
 | No revenue split or disbursement section | Split rules applied at confirmation, daily disbursement, model chosen by government |
 | Concessionaires' own systems not mentioned | Concessionaires keep their own systems and connect through published standards |
 
