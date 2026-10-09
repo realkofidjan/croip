@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CROIP: one verified record of every property and every rate payment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Source+Serif+4:opsz,wght@8..60,400..700&display=swap" rel="stylesheet">
+<style>
+:root {
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  --paper: #F3F6F5;
+  --panel: #E5EDEC;
+  --ink: #11303A;
+  --muted: #46606A;
+  --line: #C3D1CF;
+  --road: #D9E3E2;
+  --teal: #1B7A7B;
+  --amber: #E0A526;
+  --amber-ink: #231800;
+  --s-sub: #6F86A0;
+  --s-ver: #1B7A7B;
+  --s-bill: #E0A526;
+  --s-paid: #2F8F4E;
+  --band-bg: #11303A;
+  --band-ink: #EAF2F1;
+  --band-line: #2C505B;
+  --ui: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0C1D24;
+    --panel: #12303A;
+    --ink: #E7F0EF;
+    --muted: #9DB4B8;
+    --line: #28464F;
+    --road: #10272F;
+    --teal: #46B5B5;
+    --amber: #F0B73A;
+    --s-sub: #8CA2BB;
+    --s-ver: #2FA3A3;
+    --s-bill: #F0B73A;
+    --s-paid: #4DB36D;
+    --band-bg: #12303A;
+    --band-ink: #E7F0EF;
+    --band-line: #2C505B;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0C1D24;
+  --panel: #12303A;
+  --ink: #E7F0EF;
+  --muted: #9DB4B8;
+  --line: #28464F;
+  --road: #10272F;
+  --teal: #46B5B5;
+  --amber: #F0B73A;
+  --s-sub: #8CA2BB;
+  --s-ver: #2FA3A3;
+  --s-bill: #F0B73A;
+  --s-paid: #4DB36D;
+  --band-bg: #12303A;
+  --band-ink: #E7F0EF;
+  --band-line: #2C505B;
+}
+*, *::before, *::after { box-sizing: inherit; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 72px); }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 1.125rem;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 32px); }
+h1, h2, h3 { font-family: var(--ui); margin: 0; font-stretch: 108%; }
+h1 { font-size: clamp(2.3rem, 5.4vw, 4.1rem); line-height: 1.03; letter-spacing: -0.02em; font-weight: 700; max-width: 17ch; }
+h2 { font-size: clamp(1.7rem, 3.2vw, 2.45rem); line-height: 1.12; letter-spacing: -0.012em; font-weight: 650; max-width: 22ch; }
+h3 { font-size: 1.15rem; font-weight: 650; line-height: 1.25; }
+p { margin: 0 0 1em; max-width: 64ch; }
+.lede { font-size: 1.25rem; color: var(--muted); max-width: 58ch; }
+.ui { font-family: var(--ui); }
+a { color: var(--teal); }
+:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; border-radius: 3px; }
+
+/* header */
+.site-head {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: var(--paper); border-bottom: 1px solid var(--line);
+}
+.site-head .wrap { display: flex; align-items: center; gap: 24px; min-height: 56px; }
+.logo { font-family: var(--ui); font-weight: 800; font-stretch: 118%; letter-spacing: 0.04em; font-size: 1.15rem; color: var(--ink); text-decoration: none; flex: none; }
+.nav { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.nav::-webkit-scrollbar { display: none; }
+.nav a { font-family: var(--ui); font-size: 0.95rem; font-weight: 500; color: var(--muted); text-decoration: none; padding: 10px 12px; white-space: nowrap; border-radius: 6px; }
+.nav a:hover { color: var(--ink); background: var(--panel); }
+
+/* sections */
+.section { padding: clamp(56px, 9vw, 104px) 0; }
+.section.alt { background: var(--panel); }
+.section-head { margin-bottom: clamp(28px, 4vw, 48px); }
+.section-head p { margin-top: 16px; color: var(--muted); }
+
+/* hero */
+.hero { padding-top: clamp(40px, 7vw, 80px); padding-bottom: clamp(40px, 6vw, 72px); }
+.hero .lede { margin-top: 24px; }
+
+/* atlas */
+.atlas { margin-top: clamp(32px, 5vw, 56px); border: 1px solid var(--line); border-radius: 10px; background: var(--paper); }
+.atlas-top { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.atlas-top p { margin: 0; font-family: var(--ui); font-size: 0.92rem; color: var(--muted); max-width: none; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-family: var(--ui); font-size: 0.88rem; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 4px 12px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--ink); cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.chip .sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; flex: none; }
+.sw.n1 { background: var(--paper); border: 1.5px dashed var(--muted); }
+.sw.s0 { background: var(--s-sub); }
+.sw.s1 { background: var(--s-ver); }
+.sw.s2 { background: var(--s-bill); }
+.sw.s3 { background: var(--s-paid); }
+.atlas-body { display: grid; grid-template-columns: minmax(0, 1fr) 330px; }
+.map-col { padding: 14px; min-width: 0; }
+#map { width: 100%; height: auto; display: block; border-radius: 6px; background: var(--road); }
+.plot { stroke: var(--road); stroke-width: 2; stroke-linejoin: round; cursor: pointer; transition: fill 0.25s, opacity 0.2s; }
+.plot.n1 { fill: var(--paper); stroke: var(--line); stroke-dasharray: 3 3; stroke-width: 1.2; }
+.plot.s0 { fill: var(--s-sub); }
+.plot.s1 { fill: var(--s-ver); }
+.plot.s2 { fill: var(--s-bill); }
+.plot.s3 { fill: var(--s-paid); }
+.plot.dim { opacity: 0.22; }
+.plot:hover { stroke: var(--ink); stroke-width: 2.5; }
+.plot:focus-visible { outline: none; stroke: var(--ink); stroke-width: 3; }
+#sel { fill: none; stroke: var(--ink); stroke-width: 3.5; pointer-events: none; stroke-linejoin: round; }
+.scrub { display: flex; align-items: center; gap: 14px; margin-top: 14px; font-family: var(--ui); font-size: 0.92rem; }
+.scrub label { color: var(--muted); flex: none; }
+.scrub input[type="range"] { flex: 1; min-width: 0; accent-color: var(--teal); height: 32px; }
+.scrub output { flex: none; width: 5.5em; font-weight: 600; font-variant-numeric: tabular-nums; }
+.btn { font-family: var(--ui); font-size: 0.95rem; font-weight: 600; min-height: 40px; padding: 6px 18px; border-radius: 6px; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--ink); }
+.panel { border-left: 1px solid var(--line); padding: 18px; font-family: var(--ui); }
+.panel h3 { font-size: 0.98rem; color: var(--muted); font-weight: 600; margin-bottom: 10px; }
+.kv { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 0.93rem; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.panel .block + .block { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
+.plot-title { font-size: 1.3rem; font-weight: 700; font-stretch: 106%; margin: 0 0 4px; }
+.status-line { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; margin: 0 0 14px; }
+.status-line .sw { width: 12px; height: 12px; border-radius: 3px; }
+.history { margin: 14px 0 0; padding: 0; list-style: none; font-size: 0.88rem; color: var(--muted); }
+.history li { padding: 3px 0; }
+.note { font-family: var(--ui); font-size: 0.85rem; color: var(--muted); margin: 14px 0 0; max-width: none; }
+
+/* why */
+.mode { display: inline-flex; border: 1px solid var(--ink); border-radius: 999px; padding: 3px; margin-bottom: 28px; }
+.mode button { font-family: var(--ui); font-size: 0.95rem; font-weight: 600; min-height: 40px; padding: 4px 20px; border: 0; background: transparent; color: var(--ink); border-radius: 999px; cursor: pointer; }
+.mode button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.rows { border-top: 1px solid var(--line); }
+.row { display: grid; grid-template-columns: minmax(150px, 0.8fr) minmax(0, 2.2fr); gap: 8px 32px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+.row h3 { padding-top: 2px; }
+.row p { margin: 0; transition: opacity 0.2s; }
+.rows[data-mode="today"] .row p { color: var(--muted); }
+.context { margin-top: 32px; font-family: var(--ui); font-size: 0.95rem; color: var(--muted); max-width: 70ch; }
+.context strong { color: var(--ink); font-size: 1.05rem; }
+
+/* tabs (platform and users) */
+.tabs { display: grid; grid-template-columns: minmax(200px, 0.9fr) minmax(0, 2.1fr); gap: 32px 48px; align-items: start; }
+.tablist { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+.tab { font-family: var(--ui); text-align: left; font-size: 1.02rem; font-weight: 550; padding: 14px 4px; min-height: 48px; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; }
+.tab[aria-selected="true"] { color: var(--ink); font-weight: 700; background: var(--panel); padding-left: 14px; }
+.section.alt .tab[aria-selected="true"] { background: var(--paper); }
+.tabpanel h3 { font-size: 1.5rem; font-stretch: 106%; margin-bottom: 12px; }
+.tabpanel .gets { margin: 20px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+.tabpanel .gets li { padding: 12px 0; border-bottom: 1px solid var(--line); }
+
+/* swimlane */
+.lane-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); }
+#lanes { display: block; min-width: 820px; width: 100%; height: auto; }
+.lane-bg.odd { fill: var(--panel); }
+.lane-bg.even { fill: var(--paper); }
+.lane-label { font-family: var(--ui); font-size: 13px; font-weight: 600; fill: var(--muted); }
+.node rect { fill: var(--paper); stroke: var(--muted); stroke-width: 1.3; transition: fill 0.2s; }
+.node.sub rect { stroke-dasharray: 4 3; fill: var(--paper); }
+.node text { font-family: var(--ui); font-size: 12.5px; font-weight: 600; fill: var(--ink); text-anchor: middle; }
+.node.active rect { fill: var(--amber); stroke: var(--amber); }
+.node.active text { fill: var(--amber-ink); }
+.link { fill: none; stroke: var(--muted); stroke-width: 1.4; }
+.link.dash { stroke-dasharray: 3 3; }
+.arrowhead { fill: var(--muted); }
+.steps { display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0 18px; }
+.steps .chip { border-radius: 8px; }
+.stepcard { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 16px 40px; align-items: start; }
+.stepcard h3 { font-size: 1.4rem; font-stretch: 106%; margin-bottom: 10px; }
+.stepcard .sees { border-left: 1px solid var(--line); padding-left: 24px; font-family: var(--ui); font-size: 0.97rem; }
+.stepcard .sees h4 { margin: 0 0 6px; font-size: 0.95rem; color: var(--muted); font-weight: 600; }
+
+/* calculator */
+.calc { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px 56px; align-items: start; }
+.field { margin-bottom: 18px; font-family: var(--ui); }
+.field label, .field .lab { display: block; font-size: 0.93rem; font-weight: 600; margin-bottom: 6px; }
+.field select, .field input[type="number"] { width: 100%; min-height: 46px; padding: 8px 12px; font: inherit; font-size: 1rem; color: var(--ink); background: var(--paper); border: 1px solid var(--muted); border-radius: 6px; }
+.field select:disabled, .field input:disabled { opacity: 0.45; }
+.check { display: flex; gap: 10px; align-items: center; font-family: var(--ui); font-size: 0.97rem; min-height: 44px; }
+.check input { width: 20px; height: 20px; accent-color: var(--teal); flex: none; }
+.result { border: 1px solid var(--ink); border-radius: 10px; padding: clamp(18px, 3vw, 28px); background: var(--paper); font-family: var(--ui); }
+.result .amount { font-size: clamp(2.4rem, 5vw, 3.4rem); font-weight: 750; font-stretch: 108%; letter-spacing: -0.02em; line-height: 1; font-variant-numeric: tabular-nums; }
+.result .basis { margin: 12px 0 0; color: var(--muted); font-size: 0.97rem; }
+.result ol { margin: 18px 0 0; padding: 14px 0 0 20px; border-top: 1px solid var(--line); font-size: 0.95rem; }
+.result li { padding: 3px 0; font-variant-numeric: tabular-nums; }
+.result .alt-note { margin: 16px 0 0; padding: 12px 14px; background: var(--panel); border-radius: 6px; font-size: 0.92rem; }
+
+/* join band */
+.band { background: var(--band-bg); color: var(--band-ink); }
+.band h2 { color: var(--band-ink); }
+.band .section-head p { color: var(--band-ink); opacity: 0.8; }
+.join { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 56px; }
+.join h3 { margin-bottom: 4px; }
+.join .sub { font-family: var(--ui); font-size: 0.93rem; opacity: 0.75; margin: 0 0 14px; max-width: none; }
+.join label { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-top: 1px solid var(--band-line); font-family: var(--ui); font-size: 1rem; cursor: pointer; }
+.join input { width: 22px; height: 22px; margin-top: 1px; accent-color: var(--amber); flex: none; }
+.join label:last-child { border-bottom: 1px solid var(--band-line); }
+.progress { margin-top: 36px; font-family: var(--ui); }
+.bar { height: 10px; border-radius: 999px; background: var(--band-line); overflow: hidden; margin-top: 10px; max-width: 560px; }
+.bar span { display: block; height: 100%; width: 0; background: var(--amber); transition: width 0.3s; }
+.progress p { margin: 0; max-width: none; }
+.band :focus-visible { outline-color: var(--amber); }
+
+footer { padding: 40px 0 56px; font-family: var(--ui); font-size: 0.88rem; color: var(--muted); }
+footer p { max-width: 80ch; margin-bottom: 8px; }
+
+@media (max-width: 920px) {
+  .atlas-body { grid-template-columns: 1fr; }
+  .panel { border-left: 0; border-top: 1px solid var(--line); }
+  .tabs { grid-template-columns: 1fr; }
+  .tablist { flex-direction: row; overflow-x: auto; border-top: 0; border-bottom: 1px solid var(--line); scrollbar-width: none; }
+  .tab { flex: none; border-bottom: 0; white-space: nowrap; }
+  .tab[aria-selected="true"] { padding-left: 4px; background: transparent; box-shadow: inset 0 -3px 0 var(--ink); }
+  .calc, .join, .stepcard { grid-template-columns: 1fr; }
+  .stepcard .sees { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 14px; }
+  .row { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="logo" href="#top">CROIP</a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#why">Why it matters</a>
+      <a href="#platform">What it does</a>
+      <a href="#how">How it works</a>
+      <a href="#calculator">Bill calculator</a>
+      <a href="#users">Who uses it</a>
+      <a href="#join">Joining</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <h1>One verified record of every property and every rate payment</h1>
+      <p class="lede">CROIP, the Central Revenue Oversight and Integration Platform, keeps a single verified property register, calculates each bill from the municipality's rate card, routes payments through a partner bank, and shows government what is billed and collected as it happens.</p>
+
+      <div class="atlas" aria-label="Interactive map of a sample municipality">
+        <div class="atlas-top">
+          <p>A sample municipality with illustrative data. Select a plot, or move the slider to watch the rollout.</p>
+          <div class="legend" id="legend" role="group" aria-label="Filter plots by status"></div>
+        </div>
+        <div class="atlas-body">
+          <div class="map-col">
+            <svg id="map" viewBox="0 0 760 440" role="group" aria-label="Plots in a sample municipality"></svg>
+            <div class="scrub">
+              <button class="btn ghost" id="play" type="button" aria-label="Play rollout">Play</button>
+              <label for="time">Rollout</label>
+              <input type="range" id="time" min="0" max="100" value="70">
+              <output id="month" for="time">Month 8</output>
+            </div>
+          </div>
+          <aside class="panel" aria-live="polite">
+            <div class="block">
+              <h3>Sample municipality</h3>
+              <dl class="kv" id="totals"></dl>
+            </div>
+            <div class="block" id="detail"></div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="why">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>What changes for government</h2>
+        <p>Switch between how property rates typically work today and how they work with CROIP.</p>
+      </div>
+      <div class="mode" role="group" aria-label="Compare today and with CROIP">
+        <button type="button" id="mode-today" aria-pressed="false">Today</button>
+        <button type="button" id="mode-with" aria-pressed="true">With CROIP</button>
+      </div>
+      <div class="rows" id="rows" data-mode="with"></div>
+      <p class="context"><strong>About 0.03% of GDP.</strong> That is the share property rates contributed in Ghana in 2016, according to CUTS International as reported by the Business and Financial Times. Better data and billing are two of the levers for changing it.</p>
+    </div>
+  </section>
+
+  <section class="section alt" id="platform">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>What CROIP does</h2>
+        <p>Six capabilities, each built so government can see, check and rely on what happens in every municipality.</p>
+      </div>
+      <div class="tabs" id="platform-tabs">
+        <div class="tablist" role="tablist" aria-label="Capabilities" aria-orientation="vertical"></div>
+        <div class="tabpanel" role="tabpanel" tabindex="0"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="how">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>How a property becomes revenue</h2>
+        <p>Three systems work together: the ratepayer, the municipality's concessionaire, and CROIP. Select a step to see who does what.</p>
+      </div>
+      <div class="lane-wrap"><svg id="lanes" viewBox="0 0 1000 380" role="img" aria-label="Swimlane diagram of the six steps from a ratepayer adding a property to payment reconciliation"></svg></div>
+      <div class="steps" id="steps" role="group" aria-label="Steps"></div>
+      <div class="stepcard" id="stepcard" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="section alt" id="calculator">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Bills calculated from the rate card</h2>
+        <p>Concessionaires never type an amount. They ask CROIP to bill a property, and CROIP applies the municipality's approved rate card. Try an example below.</p>
+      </div>
+      <div class="calc">
+        <form id="calc-form" onsubmit="return false">
+          <div class="field">
+            <label for="cls">Property class</label>
+            <select id="cls">
+              <option value="1">First class residential</option>
+              <option value="2" selected>Second class residential</option>
+              <option value="3">Third class residential</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="dev">Development status</label>
+            <select id="dev">
+              <option value="completed" selected>Completed building</option>
+              <option value="uncompleted">Uncompleted building</option>
+              <option value="undeveloped">Undeveloped plot</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="val">Valuation status</label>
+            <select id="val">
+              <option value="assessed" selected>Assessed by LVD</option>
+              <option value="unassessed">Not yet assessed</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="rv">Rateable value (GH&cent;)</label>
+            <input type="number" id="rv" min="0" step="100" value="80000" inputmode="numeric">
+          </div>
+          <label class="check"><input type="checkbox" id="aged"> Ratepayer is 60 or older (example rebate)</label>
+        </form>
+        <div class="result" aria-live="polite">
+          <div class="amount" id="amount"></div>
+          <p class="basis" id="basis"></p>
+          <ol id="calc-steps"></ol>
+          <p class="alt-note" id="alt-note"></p>
+        </div>
+      </div>
+      <p class="note" style="margin-top:24px">Example rate card for an illustrative municipality, 2026. Rates and minimums are samples, not any assembly's actual rates. Each real bill records the version of the rate card it used.</p>
+    </div>
+  </section>
+
+  <section class="section" id="users">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>One platform, six kinds of user</h2>
+        <p>Each group sees what it needs and nothing more. Access is scoped by role and by municipality.</p>
+      </div>
+      <div class="tabs" id="user-tabs">
+        <div class="tablist" role="tablist" aria-label="Users" aria-orientation="vertical"></div>
+        <div class="tabpanel" role="tabpanel" tabindex="0"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section band" id="join">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Bringing a municipality on</h2>
+        <p>A concessionaire signs one contract with CROIP and builds on its APIs. Each municipality it serves is then added separately, and every municipality has exactly one concessionaire. Tick items off to see readiness.</p>
+      </div>
+      <div class="join" id="join-lists">
+        <div>
+          <h3>For the concessionaire, once</h3>
+          <p class="sub">Contract with CROIP and technical readiness.</p>
+          <div data-group="c"></div>
+        </div>
+        <div>
+          <h3>For each municipality added</h3>
+          <p class="sub">Authority, rates and a final test.</p>
+          <div data-group="m"></div>
+        </div>
+      </div>
+      <div class="progress">
+        <p id="progress-text"><strong>0 of 6</strong> items ready</p>
+        <div class="bar" aria-hidden="true"><span id="progress-bar"></span></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>CROIP is a proposed platform. Figures, rates and plots on this page are illustrative and are not drawn from any real municipality.</p>
+    <p>Background: Local Governance Act, 2016 (Act 936); Lands Commission Act, 2008 (Act 767); published assembly fee-fixing resolutions; CUTS International via the Business and Financial Times.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var NS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function h(tag, attrs, html) {
+    var e = document.createElement(tag);
+    if (attrs) for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (html != null) e.innerHTML = html;
+    return e;
+  }
+  function fmt(n, d) {
+    return Number(n).toLocaleString("en-GH", { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 });
+  }
+
+  /* ---------- shared example rate card ---------- */
+  var RATES = {
+    assessed: { 1: { rate: 0.0084, min: 500 }, 2: { rate: 0.0056, min: 300 }, 3: { rate: 0.0036, min: 150 } },
+    provisional: { 1: 400, 2: 300, 3: 200 },
+    uncompleted: { 1: 200, 2: 150, 3: 100 },
+    ground: { 1: 200, 2: 150, 3: 100 },
+    rebate: 0.3
+  };
+  var CLASS_NAME = { 1: "First class residential", 2: "Second class residential", 3: "Third class residential" };
+  var DEV_NAME = { completed: "Completed building", uncompleted: "Uncompleted building", undeveloped: "Undeveloped plot" };
+
+  function bill(cls, dev, assessed, rv, aged) {
+    var amount, basis, steps = [];
+    if (dev === "undeveloped") {
+      amount = RATES.ground[cls];
+      basis = "Ground rate on an undeveloped plot";
+      steps.push("Ground rate, " + CLASS_NAME[cls].toLowerCase() + ": GH\u00A2 " + fmt(amount, 2));
+    } else if (dev === "uncompleted") {
+      amount = RATES.uncompleted[cls];
+      basis = "Rate on account for an uncompleted building";
+      steps.push("Uncompleted-building rate, " + CLASS_NAME[cls].toLowerCase() + ": GH\u00A2 " + fmt(amount, 2));
+    } else if (assessed) {
+      var r = RATES.assessed[cls];
+      var raw = rv * r.rate;
+      amount = Math.max(raw, r.min);
+      basis = "Assessed property: rateable value times the assembly's rate";
+      steps.push("Rateable value from LVD: GH\u00A2 " + fmt(rv, 2));
+      steps.push("Rate for " + CLASS_NAME[cls].toLowerCase() + ": " + r.rate);
+      steps.push("Value times rate: GH\u00A2 " + fmt(raw, 2));
+      steps.push("Minimum bill: GH\u00A2 " + fmt(r.min, 2) + (raw < r.min ? " (applies)" : " (does not apply)"));
+    } else {
+      amount = RATES.provisional[cls];
+      basis = "Not yet assessed: flat provisional rate for the class";
+      steps.push("Provisional rate, " + CLASS_NAME[cls].toLowerCase() + ": GH\u00A2 " + fmt(amount, 2));
+    }
+    if (aged) {
+      var off = amount * RATES.rebate;
+      steps.push("Rebate of " + Math.round(RATES.rebate * 100) + "%: minus GH\u00A2 " + fmt(off, 2));
+      amount = amount - off;
+    }
+    return { amount: Math.round(amount * 100) / 100, basis: basis, steps: steps };
+  }
+
+  /* ---------- parcel map ---------- */
+  function rng(seed) {
+    return function () {
+      seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+      var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  var rand = rng(11);
+  var W = 760, H = 440, PAD = 14, ROAD = 12, COLS = 4, ROWS = 3, PC = 3, PR = 2;
+  var bw = (W - 2 * PAD - (COLS - 1) * ROAD) / COLS;
+  var bh = (H - 2 * PAD - (ROWS - 1) * ROAD) / ROWS;
+  var ZONE_CLASS = [1, 2, 2, 3];
+  var plots = [];
+  var svg = $("#map");
+  var parcelLayer = el("g", {}, svg);
+  var selOutline = el("polygon", { id: "sel", points: "" }, svg);
+
+  function jit(n) { return (rand() - 0.5) * 2 * n; }
+  for (var br = 0; br < ROWS; br++) {
+    for (var bc = 0; bc < COLS; bc++) {
+      var x0 = PAD + bc * (bw + ROAD), y0 = PAD + br * (bh + ROAD);
+      var pts = [];
+      for (var i = 0; i <= PC; i++) {
+        pts[i] = [];
+        for (var j = 0; j <= PR; j++) {
+          var px = x0 + i * bw / PC, py = y0 + j * bh / PR;
+          var edgeX = (i === 0 || i === PC), edgeY = (j === 0 || j === PR);
+          if (!(edgeX && edgeY)) {
+            if (edgeY) px += jit(4);
+            else if (edgeX) py += jit(4);
+            else { px += jit(5); py += jit(5); }
+          }
+          pts[i][j] = [px, py];
+        }
+      }
+      for (var a = 0; a < PC; a++) {
+        for (var b = 0; b < PR; b++) {
+          var poly = [pts[a][b], pts[a + 1][b], pts[a + 1][b + 1], pts[a][b + 1]];
+          var cls = ZONE_CLASS[bc];
+          var r0 = rand();
+          var dev = r0 < 0.08 ? "undeveloped" : (r0 < 0.18 ? "uncompleted" : "completed");
+          var assessed = dev === "completed" && rand() < 0.6;
+          var lo = cls === 1 ? 90000 : (cls === 2 ? 50000 : 25000);
+          var hi = cls === 1 ? 220000 : (cls === 2 ? 120000 : 70000);
+          var rv = assessed ? Math.round((lo + rand() * (hi - lo)) / 100) * 100 : 0;
+          var t0 = rand() * 0.4;
+          var t1 = t0 + 0.05 + rand() * 0.25;
+          var t2 = t1 + 0.05 + rand() * 0.2;
+          var t3 = t2 + 0.05 + rand() * 0.28;
+          var n = plots.length + 1;
+          plots.push({
+            n: n, id: "P-" + (n < 10 ? "00" : (n < 100 ? "0" : "")) + n,
+            poly: poly, cls: cls, dev: dev, assessed: assessed, rv: rv,
+            t: [t0, t1, t2, t3],
+            bill: bill(cls, dev, assessed, rv, false).amount
+          });
+        }
+      }
+    }
+  }
+  var STAGE_TEXT = { "-1": "Not yet on the register", 0: "Submitted, awaiting inspection", 1: "Verified, not yet billed", 2: "Billed, awaiting payment", 3: "Paid" };
+  var STAGE_KEY = { "-1": "n1", 0: "s0", 1: "s1", 2: "s2", 3: "s3" };
+  var HIST = ["Submitted", "Verified and approved", "Billed", "Paid"];
+
+  var v = 0.7, selected = 27, filter = null;
+  function stageAt(p, t) {
+    var s = -1;
+    for (var k = 0; k < 4; k++) if (t >= p.t[k]) s = k;
+    return s;
+  }
+  plots.forEach(function (p, idx) {
+    var pg = el("polygon", {
+      points: p.poly.map(function (q) { return q[0].toFixed(1) + "," + q[1].toFixed(1); }).join(" "),
+      "class": "plot n1", tabindex: "0", role: "button"
+    }, parcelLayer);
+    p.node = pg;
+    pg.addEventListener("click", function () { select(idx); });
+    pg.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(idx); }
+    });
+  });
+
+  var legendDefs = [["-1", "Not yet registered", "n1"], ["0", "Submitted", "s0"], ["1", "Verified", "s1"], ["2", "Billed", "s2"], ["3", "Paid", "s3"]];
+  var legend = $("#legend");
+  var legendBtns = legendDefs.map(function (d) {
+    var b = h("button", { type: "button", "class": "chip", "aria-pressed": "false", "data-stage": d[0] },
+      '<span class="sw ' + d[2] + '"></span><span class="lbl">' + d[1] + '</span> <span class="cnt"></span>');
+    b.addEventListener("click", function () {
+      filter = (filter === d[0]) ? null : d[0];
+      render();
+    });
+    legend.appendChild(b);
+    return b;
+  });
+
+  function select(i) {
+    selected = i;
+    render();
+  }
+
+  function render() {
+    var counts = { "-1": 0, 0: 0, 1: 0, 2: 0, 3: 0 };
+    var registered = 0, billed = 0, collected = 0;
+    plots.forEach(function (p, idx) {
+      var s = stageAt(p, v);
+      p.stage = s;
+      counts[s]++;
+      if (s >= 0) registered++;
+      if (s >= 2) billed += p.bill;
+      if (s === 3) collected += p.bill;
+      var cl = "plot " + STAGE_KEY[s];
+      if (filter !== null && String(s) !== filter) cl += " dim";
+      p.node.setAttribute("class", cl);
+      p.node.setAttribute("aria-label", "Plot " + p.id + ", " + STAGE_TEXT[s]);
+    });
+    legendBtns.forEach(function (b) {
+      var st = b.getAttribute("data-stage");
+      b.setAttribute("aria-pressed", filter === st ? "true" : "false");
+      $(".cnt", b).textContent = counts[st];
+    });
+    var sp = plots[selected];
+    selOutline.setAttribute("points", sp.poly.map(function (q) { return q[0].toFixed(1) + "," + q[1].toFixed(1); }).join(" "));
+
+    var rate = billed ? Math.round(collected / billed * 100) : 0;
+    $("#totals").innerHTML =
+      "<dt>On the register</dt><dd>" + registered + " of " + plots.length + "</dd>" +
+      "<dt>Billed so far</dt><dd>GH\u00A2 " + fmt(billed) + "</dd>" +
+      "<dt>Collected</dt><dd>GH\u00A2 " + fmt(collected) + "</dd>" +
+      "<dt>Collection rate</dt><dd>" + rate + "%</dd>";
+
+    var s2 = sp.stage;
+    var d = '<h3>Selected plot</h3><p class="plot-title">' + sp.id + '</p>' +
+      '<p class="status-line"><span class="sw ' + (s2 === -1 ? "n1" : "s" + s2) + '"></span>' + STAGE_TEXT[s2] + '</p>';
+    if (s2 === -1) {
+      d += '<p class="note" style="margin-top:0">No boundary, owner or bill is on the national register yet. In the rollout, ratepayers or the concessionaire\'s agents add it.</p>';
+    } else {
+      var val = sp.dev !== "completed" ? "Not applicable" : (sp.assessed ? "Assessed, GH\u00A2 " + fmt(sp.rv) : "Not yet assessed");
+      d += '<dl class="kv">' +
+        '<dt>Class</dt><dd>' + CLASS_NAME[sp.cls].replace(" residential", "") + '</dd>' +
+        '<dt>Development</dt><dd>' + DEV_NAME[sp.dev].split(" ")[0] + '</dd>' +
+        '<dt>Boundary</dt><dd>' + (s2 >= 1 ? "Surveyed, 4 points" : "Awaiting survey") + '</dd>' +
+        '<dt>Valuation</dt><dd>' + val + '</dd>' +
+        '<dt>Bill</dt><dd>' + (s2 >= 2 ? "GH\u00A2 " + fmt(sp.bill, 2) : "Not yet issued") + '</dd></dl>';
+      d += '<ul class="history">';
+      for (var k = 0; k <= s2; k++) d += '<li>Month ' + Math.max(1, Math.ceil(sp.t[k] * 12)) + ': ' + HIST[k] + '</li>';
+      d += '</ul>';
+    }
+    $("#detail").innerHTML = d;
+    var mo = Math.round(v * 12);
+    $("#month").textContent = "Month " + mo;
+  }
+
+  var slider = $("#time");
+  slider.addEventListener("input", function () { v = slider.value / 100; render(); });
+  var timer = null, playBtn = $("#play");
+  function stop() { if (timer) { clearInterval(timer); timer = null; } playBtn.textContent = "Play"; playBtn.setAttribute("aria-label", "Play rollout"); }
+  playBtn.addEventListener("click", function () {
+    if (timer) { stop(); return; }
+    if (Number(slider.value) >= 100) { slider.value = 0; v = 0; }
+    playBtn.textContent = "Pause"; playBtn.setAttribute("aria-label", "Pause rollout");
+    timer = setInterval(function () {
+      var nv = Number(slider.value) + 1;
+      slider.value = nv; v = nv / 100; render();
+      if (nv >= 100) stop();
+    }, 90);
+  });
+  render();
+
+  /* ---------- why: today vs with CROIP ---------- */
+  var WHY = [
+    ["Knowing what exists",
+      "Property lists are held in separate local systems, are hard to keep current, and valuations age.",
+      "One register where every property has a surveyed boundary of four or more points, a class, a use and a municipality."],
+    ["Getting the bill right",
+      "Amounts are looked up and typed by hand against rate tables, so errors are easy to make and hard to trace.",
+      "CROIP calculates each bill from the municipality's approved rate card and records which version of the card it used."],
+    ["Seeing the money",
+      "Collections are reported after the fact, one system at a time, and matched to bills later.",
+      "Every payment is tied to a bill ID when it is made, so reconciliation is matching rather than investigation, and dashboards update as payments arrive."],
+    ["Keeping valuation current",
+      "New and altered properties reach the Land Valuation Division slowly.",
+      "Verified property data, including boundary, class and use, is shared with LVD as properties are inspected, and rateable values flow back into bills."],
+    ["Knowing who did what",
+      "It is hard to say who approved a record or changed a bill.",
+      "Every assignment, inspection, approval and bill is tied to a named user and recorded in an audit trail."],
+    ["Serving ratepayers",
+      "Each assembly has its own process, so owners of several properties deal with several systems.",
+      "One login and one app show every property, and any bill can be paid by bank, mobile money, card, USSD or an agent."]
+  ];
+  var rowsEl = $("#rows");
+  WHY.forEach(function (r) {
+    var row = h("div", { "class": "row" });
+    row.appendChild(h("h3", null, r[0]));
+    var p = h("p", null, r[2]);
+    p.setAttribute("data-today", r[1]); p.setAttribute("data-with", r[2]);
+    row.appendChild(p);
+    rowsEl.appendChild(row);
+  });
+  function setMode(m) {
+    rowsEl.setAttribute("data-mode", m);
+    $$("#rows p").forEach(function (p) { p.textContent = p.getAttribute("data-" + m); });
+    $("#mode-today").setAttribute("aria-pressed", m === "today");
+    $("#mode-with").setAttribute("aria-pressed", m === "with");
+  }
+  $("#mode-today").addEventListener("click", function () { setMode("today"); });
+  $("#mode-with").addEventListener("click", function () { setMode("with"); });
+
+  /* ---------- tabs ---------- */
+  function tabs(root, data, idp) {
+    var list = $(".tablist", root), panel = $(".tabpanel", root), btns = [];
+    function show(i, focus) {
+      btns.forEach(function (b, k) {
+        b.setAttribute("aria-selected", k === i ? "true" : "false");
+        b.tabIndex = k === i ? 0 : -1;
+      });
+      var d = data[i];
+      var html = "<h3>" + d.title + "</h3><p>" + d.text + "</p><ul class=\"gets\">";
+      d.gets.forEach(function (g) { html += "<li>" + g + "</li>"; });
+      html += "</ul>";
+      panel.innerHTML = html;
+      panel.setAttribute("aria-labelledby", idp + i);
+      if (focus) btns[i].focus();
+    }
+    data.forEach(function (d, i) {
+      var b = h("button", { type: "button", "class": "tab", role: "tab", id: idp + i }, d.tab);
+      b.addEventListener("click", function () { show(i); });
+      b.addEventListener("keydown", function (e) {
+        var n = data.length, k = i;
+        if (e.key === "ArrowDown" || e.key === "ArrowRight") k = (i + 1) % n;
+        else if (e.key === "ArrowUp" || e.key === "ArrowLeft") k = (i + n - 1) % n;
+        else if (e.key === "Home") k = 0;
+        else if (e.key === "End") k = n - 1;
+        else return;
+        e.preventDefault(); show(k, true);
+      });
+      list.appendChild(b); btns.push(b);
+    });
+    show(0);
+  }
+
+  tabs($("#platform-tabs"), [
+    { tab: "Property register", title: "One register of every property",
+      text: "Every property has a record in CROIP with a surveyed boundary of four or more points, a municipality tag, a class and a use. Ratepayers can add properties in the app, but nothing goes live until an agent has inspected it and office staff have approved it.",
+      gets: ["A complete, defensible register, not a set of separate local lists.", "Duplicate and overlap checks before anyone is sent to inspect.", "A full history of who assigned, inspected and approved each record."] },
+    { tab: "Bills and rate cards", title: "Bills calculated from the approved rate card",
+      text: "Each municipality has a rate card, versioned by year. CROIP bills assessed properties from the rateable value and the assembly's rate, and unassessed ones at the flat provisional rate for their class and use, with rebates applied from the rate card.",
+      gets: ["The same inputs always produce the same bill.", "Every bill records the rate-card version used.", "Adjustments need a reason code and an approval, so overrides are visible."] },
+    { tab: "Payments", title: "Payments through one set of channels",
+      text: "Banks, mobile money, cards, POS devices, web, USSD and field agents all use the same payment APIs, routed to a partner bank's platform. CROIP orchestrates payments and keeps the log, but it does not hold balances.",
+      gets: ["Every payment logged against a bill ID.", "Settlement kept separate for each municipality.", "Card data never touches CROIP, because the bank's hosted checkout handles it."] },
+    { tab: "Oversight", title: "A live national view",
+      text: "A reconciliation engine matches bills, payments and settlements. Dashboards show billed, collected and outstanding by municipality, and fraud and anomaly monitoring flags unusual activity for review.",
+      gets: ["Billed, collected and outstanding, by municipality, as payments arrive.", "Alerts for unusual patterns.", "An audit trail that auditors can query."] },
+    { tab: "Ratepayer app", title: "One app for every ratepayer",
+      text: "A ratepayer signs in once and sees every property they own, in any municipality. They can add a property and track it to approval, view bills, pay, and raise a dispute or a question from the same place.",
+      gets: ["One support front door: every request becomes a ticket that routes itself.", "General questions are answered by CROIP, even from people with no property yet.", "Property-specific issues go to the municipality's concessionaire."] },
+    { tab: "Open APIs", title: "An open platform for concessionaires",
+      text: "A municipality engages a concessionaire to build and run its office and agent apps on CROIP's APIs. CROIP provides a published specification, a developer portal, a sandbox with synthetic data and a conformance test suite that must be passed before go-live.",
+      gets: ["Scoped credentials per municipality, with full audit logs.", "Access can be suspended if a concessionaire breaches its terms.", "Property and ratepayer data stays in CROIP, so changing concessionaire needs no migration."] }
+  ], "pt-");
+
+  tabs($("#user-tabs"), [
+    { tab: "Ministry of Finance", title: "Ministry of Finance",
+      text: "A consistent national view across every assembly, with the same rules applied everywhere.",
+      gets: ["Billed, collected and outstanding by municipality.", "Comparable data for budgeting and policy.", "Audit trails behind every figure."] },
+    { tab: "Assemblies (MMDAs)", title: "Assemblies",
+      text: "The assembly stays the authority behind rates, while the day-to-day work is done by its concessionaire.",
+      gets: ["An approved person confirms the yearly rate card and the concessionaire's appointment.", "Collections and settlement shown for its own municipality.", "One accountable concessionaire, and data that stays with the assembly."] },
+    { tab: "Land Valuation Division", title: "Land Valuation Division",
+      text: "LVD keeps the valuation list. CROIP is designed to give it better inputs and to carry its values straight into bills.",
+      gets: ["New and altered properties arrive with boundary, class and use already verified.", "Rateable values flow into billing without re-keying.", "Valuation disputes are routed to LVD's own process."] },
+    { tab: "Audit and revenue authorities", title: "Audit and revenue authorities",
+      text: "Oversight bodies get evidence rather than summaries.",
+      gets: ["Who assigned, inspected, approved and billed, on every record.", "Reconciliation reports that match payments to bills.", "Fraud and anomaly alerts for follow-up."] },
+    { tab: "Concessionaires", title: "Concessionaires",
+      text: "Companies engaged by municipalities build their own apps on CROIP's APIs and are accountable for the quality of what they capture.",
+      gets: ["Published specification, developer portal and sandbox.", "A conformance suite to pass before go-live.", "Credentials scoped to the municipalities they serve."] },
+    { tab: "Ratepayers", title: "Ratepayers",
+      text: "Property owners deal with one platform instead of one system per assembly.",
+      gets: ["One login for every property, in any municipality.", "Add a property and track it from request to approval.", "Pay any bill through any channel and keep the receipt."] }
+  ], "ut-");
+
+  /* ---------- swimlane ---------- */
+  var LANES = ["Ratepayer", "Concessionaire", "CROIP", "Bank and LVD"];
+  var STEPS = [
+    { lane: 0, label: "Adds a property", title: "The ratepayer adds a property",
+      text: "A ratepayer submits a plot in the universal app. CROIP checks for duplicates and overlaps, then routes the request to the municipality's concessionaire. The property is not billable yet.",
+      sees: "New property requests by municipality, with their status." },
+    { lane: 1, label: "Inspects and approves", title: "The concessionaire inspects and approves",
+      text: "An office staffer assigns one agent. The agent captures a boundary of four or more points, photos, ownership evidence, class, use, development status and storeys. The staffer who made the assignment reviews it and approves it.",
+      sees: "Who assigned, who inspected and who approved, recorded on every record." },
+    { lane: 2, label: "Goes live", extra: { lane: 3, label: "LVD gets data" }, title: "The property goes live in CROIP",
+      text: "The approved record, with its boundary, joins the register and the ratepayer sees it as verified. CROIP shares the property data with LVD so the valuation list can be updated.",
+      sees: "A verified register, and new or altered properties passed to LVD." },
+    { lane: 2, label: "Bill calculated", title: "CROIP calculates the bill",
+      text: "The concessionaire asks CROIP to bill the property for the year. CROIP applies the municipality's approved rate card: rateable value times the rate if LVD has assessed the property, otherwise the flat provisional rate for its class and use.",
+      sees: "Every bill carries the rate-card version used." },
+    { lane: 0, label: "Pays", extra: { lane: 3, label: "Bank processes" }, title: "The ratepayer pays",
+      text: "The ratepayer pays against the bill ID through any channel: bank, mobile money, card, USSD or an agent. CROIP routes the payment to the partner bank's platform and never holds balances.",
+      sees: "Payments by channel, as they arrive." },
+    { lane: 2, label: "Reconciled", title: "CROIP reconciles and notifies",
+      text: "CROIP logs the payment, matches it to the bill ID and tells the concessionaire. Settlement stays separate for each municipality.",
+      sees: "Billed, collected and outstanding by municipality, as payments arrive." }
+  ];
+  var lanes = $("#lanes");
+  var LW = 1000, LH = 380, LX = 150, LANE_H = LH / 4, NW = 112, NH = 46;
+  var defs = el("defs", {}, lanes);
+  var mk = el("marker", { id: "ah", viewBox: "0 0 10 10", refX: "9", refY: "5", markerWidth: "7", markerHeight: "7", orient: "auto-start-reverse" }, defs);
+  el("path", { d: "M0,0 L10,5 L0,10 z", "class": "arrowhead" }, mk);
+  LANES.forEach(function (name, i) {
+    el("rect", { x: 0, y: i * LANE_H, width: LW, height: LANE_H, "class": "lane-bg " + (i % 2 ? "odd" : "even") }, lanes);
+    var t = el("text", { x: 16, y: i * LANE_H + LANE_H / 2 + 5, "class": "lane-label" }, lanes);
+    t.textContent = name;
+  });
+  var colW = (LW - LX - 20) / STEPS.length;
+  var nodes = [];
+  function cx(i) { return LX + colW * i + colW / 2; }
+  function cy(l) { return l * LANE_H + LANE_H / 2; }
+  STEPS.forEach(function (s, i) {
+    if (i < STEPS.length - 1) {
+      var n = STEPS[i + 1];
+      var x1 = cx(i) + NW / 2, y1 = cy(s.lane), x2 = cx(i + 1) - NW / 2, y2 = cy(n.lane), xm = (x1 + x2) / 2;
+      el("path", { d: "M" + x1 + "," + y1 + " C" + xm + "," + y1 + " " + xm + "," + y2 + " " + x2 + "," + y2, "class": "link", "marker-end": "url(#ah)" }, lanes);
+    }
+  });
+  STEPS.forEach(function (s, i) {
+    if (s.extra) {
+      el("path", { d: "M" + cx(i) + "," + (cy(s.lane) + NH / 2) + " L" + cx(i) + "," + (cy(s.extra.lane) - 17), "class": "link dash" }, lanes);
+    }
+  });
+  function drawNode(x, y, w, hh, label, cls, idx) {
+    var g = el("g", { "class": "node " + cls, "data-step": idx }, lanes);
+    el("rect", { x: x - w / 2, y: y - hh / 2, width: w, height: hh, rx: 8 }, g);
+    var words = label.split(" ");
+    var lines = [label];
+    if (label.length > 13 && words.length > 1) {
+      var mid = Math.ceil(words.length / 2);
+      lines = [words.slice(0, mid).join(" "), words.slice(mid).join(" ")];
+    }
+    lines.forEach(function (ln, k) {
+      var ty = y + 4 + (k - (lines.length - 1) / 2) * 15;
+      var tt = el("text", { x: x, y: ty }, g);
+      tt.textContent = ln;
+    });
+    return g;
+  }
+  STEPS.forEach(function (s, i) {
+    var g = [drawNode(cx(i), cy(s.lane), NW, NH, s.label, "main", i)];
+    if (s.extra) g.push(drawNode(cx(i), cy(s.extra.lane), NW, 34, s.extra.label, "sub", i));
+    nodes.push(g);
+  });
+
+  var stepsEl = $("#steps"), stepBtns = [];
+  var card = $("#stepcard");
+  function showStep(i) {
+    stepBtns.forEach(function (b, k) { b.setAttribute("aria-pressed", k === i ? "true" : "false"); });
+    nodes.forEach(function (g, k) { g.forEach(function (n) { n.classList.toggle("active", k === i); }); });
+    var s = STEPS[i];
+    card.innerHTML = '<div><h3>' + (i + 1) + '. ' + s.title + '</h3><p>' + s.text + '</p></div>' +
+      '<div class="sees"><h4>What government sees</h4><p style="margin:0">' + s.sees + '</p></div>';
+  }
+  STEPS.forEach(function (s, i) {
+    var b = h("button", { type: "button", "class": "chip", "aria-pressed": "false" }, (i + 1) + ". " + s.label);
+    b.addEventListener("click", function () { showStep(i); });
+    stepsEl.appendChild(b); stepBtns.push(b);
+  });
+  nodes.forEach(function (g, i) {
+    g.forEach(function (n) {
+      n.style.cursor = "pointer";
+      n.addEventListener("click", function () { showStep(i); });
+    });
+  });
+  showStep(0);
+
+  /* ---------- calculator ---------- */
+  var fCls = $("#cls"), fDev = $("#dev"), fVal = $("#val"), fRv = $("#rv"), fAged = $("#aged");
+  function calc() {
+    var cls = Number(fCls.value), dev = fDev.value;
+    var completed = dev === "completed";
+    fVal.disabled = !completed;
+    var assessed = completed && fVal.value === "assessed";
+    fRv.disabled = !assessed;
+    var rv = Math.max(0, Number(fRv.value) || 0);
+    var res = bill(cls, dev, assessed, rv, fAged.checked);
+    $("#amount").textContent = "GH\u00A2 " + fmt(res.amount, 2);
+    $("#basis").textContent = res.basis;
+    $("#calc-steps").innerHTML = res.steps.map(function (s) { return "<li>" + s + "</li>"; }).join("");
+    var note = "";
+    if (completed) {
+      if (assessed) {
+        var prov = bill(cls, dev, false, 0, fAged.checked).amount;
+        note = "If this property had not yet been assessed, the provisional bill would be GH\u00A2 " + fmt(prov, 2) + ".";
+      } else {
+        note = "Once LVD assesses this property, the bill switches to its rateable value times the rate.";
+      }
+    } else {
+      note = "Uncompleted buildings and undeveloped plots have their own rates until they are completed and assessed.";
+    }
+    $("#alt-note").textContent = note;
+  }
+  [fCls, fDev, fVal, fRv, fAged].forEach(function (f) { f.addEventListener("input", calc); f.addEventListener("change", calc); });
+  calc();
+
+  /* ---------- join checklist ---------- */
+  var ITEMS = {
+    c: ["Contract and API terms signed with CROIP", "Developer portal access and keys issued", "Sandbox conformance suite passed"],
+    m: ["Appointment confirmed by the municipality's approved person", "Rate card verified against the published resolution and entered", "Configuration test passed before go-live"]
+  };
+  var boxes = [];
+  ["c", "m"].forEach(function (g) {
+    var host = $('[data-group="' + g + '"]');
+    ITEMS[g].forEach(function (t) {
+      var lab = h("label");
+      var cb = h("input", { type: "checkbox" });
+      lab.appendChild(cb); lab.appendChild(h("span", null, t));
+      cb.addEventListener("change", prog);
+      host.appendChild(lab); boxes.push(cb);
+    });
+  });
+  function prog() {
+    var n = boxes.filter(function (b) { return b.checked; }).length;
+    $("#progress-text").innerHTML = "<strong>" + n + " of " + boxes.length + "</strong> items ready" + (n === boxes.length ? ". This municipality can go live." : "");
+    $("#progress-bar").style.width = (n / boxes.length * 100) + "%";
+  }
+  prog();
+})();
+</script>
+</body>
+</html>
